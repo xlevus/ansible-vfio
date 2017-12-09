@@ -1,0 +1,65 @@
+---
+
+- name: Intel IOMMU kernel option
+  become: yes
+  lineinfile:
+    state: present
+    path: {{ grub_config }}
+    regexp: '^VFIO_IOMMU='
+    line: 'VFIO_IOMMU="{{ vfio_iommu }}_iommu=on"'
+    insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
+  notify: update grub
+  when: vfio_iommu in ['intel', 'amd']
+
+- name: Hugepages kernel option
+  become: yes
+  lineinfile:
+    state: present
+    path: {{ grub_config }}
+    regexp: '^VFIO_HUGEPAGES='
+    line: >-
+      VFIO_HUGEPAGES="{% if not vfio_transparent_hugepage %}transparent_hugepage=never{% endif %}
+        {% for pg in vfio_hugepages -%}
+        {%- if loop.first %}default_hugepagesz={{ pg.size }}{% endif %}
+        hugepagesz={{ pg.size }} hugepages={{ pg.count }}{% endfor %}"
+    insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
+  notify: update grub
+
+- name: PCI-IDs kernel option
+  become: yes
+  lineinfile:
+    state: present
+    path: {{ grub_config }}
+    regexp: '^VFIO_PCIIDS='
+    line: 'VFIO_PCIIDS="{% if vfio_pci_ids %}vfio-pci.ids={{ vfio_pci_ids|join(",") }}"{% endif %}'
+    insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
+  notify: update grub
+
+- name: VFIO kernel options
+  become: yes
+  lineinfile:
+    state: present
+    path: {{ grub_config }}
+    regexp: '^VFIOFLAGS='
+    line: 'VFIOFLAGS="rd.driver.pre=vfio-pci $VFIO_IOMMU $VFIO_HUGEPAGES $VFIO_PCIIDS"'
+    insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
+  notify: update grub
+
+# TODO: make this not munge whatever is already there.
+- name: Kernel Options
+  become: yes
+  lineinfile:
+    state: present
+    backrefs: yes
+    path: {{ grub_config }}
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet $VFIOFLAGS"'
+  notify: update grub
+
+- name: VFIO modules.conf
+  become: yes
+  copy:
+    dest: /etc/modprobe.d/vfio.conf
+    content: options vfio-pci ids={{ vfio_pci_ids|join(",") }}
+  when: vfio_pci_ids
+  notify: update initramfs
