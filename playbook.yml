@@ -8,10 +8,17 @@
       - 10de:0fb8
       - 10de:1b06
       - 10de:10ef
+
     vfio_transparent_hugepage: false  # transparent_hugepage=never
     vfio_hugepages:  # First option is default
       - size: 1G
-        count: 16
+        count: 32
+
+    vfio_hugetlbfs_group: hugetlbfs
+    vfio_hugetlbfs_users:
+      - xlevus
+    vfio_hugetlbfs_mount: /hugepages
+
     grub_config: /etc/default/grub
   roles:
     - vfio
