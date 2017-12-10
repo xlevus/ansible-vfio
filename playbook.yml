@@ -22,3 +22,4 @@
     grub_config: /etc/default/grub
   roles:
     - vfio
+    - libvirtd

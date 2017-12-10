@@ -1,0 +1,29 @@
+---
+- name: Install Packages
+  become: yes
+  package:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - ovmf
+    - libvirt-clients
+    - libvirt-daemon
+    - libvirt-daemon-system
+    - qemu-kvm
+
+- name: Uninstall Apparmor
+  become: yes
+  package:
+    state: absent
+  when: libvirt_disable_apparmor
+  notify: mark apparmor
+
+- name: Enable Services
+  become: yes
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - libvirtd
+    - libvirt-guests
