@@ -2,6 +2,8 @@
 - hosts:
     - xi9
   vars:
+    grub_config: /etc/default/grub
+
     vfio_iommu: intel  # amd|intel
     vfio_pci_ids:
       - 10de:1d01
@@ -19,7 +21,6 @@
       - xlevus
     vfio_hugetlbfs_mount: /hugepages
 
-    grub_config: /etc/default/grub
   roles:
     - vfio
     - libvirtd
