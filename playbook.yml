@@ -1,20 +1,24 @@
 ---
+- hosts: all
+  tasks:
+    - group_by: key=os_{{ ansible_distribution }}
+
 - hosts:
     - xi9
+  gather_facts: False
   vars:
-    grub_config: /etc/default/grub
-
     vfio_iommu: intel  # amd|intel
     vfio_pci_ids:
       - 10de:1d01
       - 10de:0fb8
       - 10de:1b06
       - 10de:10ef
+      - 1b73:1100
 
     vfio_transparent_hugepage: false  # transparent_hugepage=never
     vfio_hugepages:  # First option is default
       - size: 1G
-        count: 32
+        count: 50
 
     vfio_hugetlbfs_group: hugetlbfs
     vfio_hugetlbfs_users:

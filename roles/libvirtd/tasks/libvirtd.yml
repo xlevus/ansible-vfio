@@ -4,12 +4,7 @@
   package:
     state: present
     name: "{{ item }}"
-  with_items:
-    - ovmf
-    - libvirt-clients
-    - libvirt-daemon
-    - libvirt-daemon-system
-    - qemu-kvm
+  with_items: "{{ libvirtd_pkg }}"
 
 - name: Uninstall Apparmor
   become: yes

@@ -18,9 +18,9 @@
     path: "{{ grub_config }}"
     regexp: '^VFIO_HUGEPAGES='
     line: >-
-      VFIO_HUGEPAGES="{% if not vfio_transparent_hugepage %}transparent_hugepage=never{% endif %}
+      VFIO_HUGEPAGES="{% if not vfio_transparent_hugepage %}transparent_hugepage=never {% endif -%}
         {% for pg in vfio_hugepages -%}
-        {%- if loop.first %}default_hugepagesz={{ pg.size }}{% endif %}
+        {%- if loop.first %}default_hugepagesz={{ pg.size }} {% endif -%}
         hugepagesz={{ pg.size }} hugepages={{ pg.count }}{% endfor %}"
     insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
   notify: update grub
