@@ -1,12 +1,12 @@
 ---
 
-- name: Intel IOMMU kernel option
+- name: IOMMU kernel option
   become: yes
   lineinfile:
     state: present
     path: "{{ grub_config }}"
     regexp: '^VFIO_IOMMU='
-    line: 'VFIO_IOMMU="{{ vfio_iommu }}_iommu=on"'
+    line: 'VFIO_IOMMU="iommu=1 {{ vfio_iommu }}_iommu=on"'
     insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
   notify: update grub
   when: vfio_iommu in ['intel', 'amd']
@@ -31,7 +31,7 @@
     state: present
     path: "{{ grub_config }}"
     regexp: '^VFIO_PCIIDS='
-    line: 'VFIO_PCIIDS="{% if vfio_pci_ids %}vfio-pci.ids={{ vfio_pci_ids|join(",") }}"{% endif %}'
+    line: 'VFIO_PCIIDS="rd.driver.pre=vfio-pci {% if vfio_pci_ids %}vfio-pci.ids={{ vfio_pci_ids|join(",") }}"{% endif %}'
     insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
   notify: update grub
 
@@ -41,19 +41,18 @@
     state: present
     path: "{{ grub_config }}"
     regexp: '^VFIOFLAGS='
-    line: 'VFIOFLAGS="rd.driver.pre=vfio-pci $VFIO_IOMMU $VFIO_HUGEPAGES $VFIO_PCIIDS"'
+    line: 'VFIOFLAGS="$VFIO_IOMMU $VFIO_HUGEPAGES $VFIO_PCIIDS"'
     insertbefore: "^GRUB_CMDLINE_LINUX_DEFAULT="
   notify: update grub
 
-# TODO: make this not munge whatever is already there.
 - name: Kernel Options
   become: yes
   lineinfile:
     state: present
     backrefs: yes
     path: "{{ grub_config }}"
-    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
-    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet $VFIOFLAGS"'
+    regexp: '^(GRUB_CMDLINE_LINUX_DEFAULT=(?!.*\$VFIOFLAGS)"[^"]+)(".*)'
+    line: '\1 $VFIOFLAGS\2'
   notify: update grub
 
 - name: VFIO modules.conf
