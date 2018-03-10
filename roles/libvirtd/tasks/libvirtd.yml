@@ -6,13 +6,6 @@
     name: "{{ item }}"
   with_items: "{{ libvirtd_pkg }}"
 
-- name: Uninstall Apparmor
-  become: yes
-  package:
-    state: absent
-  when: libvirt_disable_apparmor
-  notify: mark apparmor
-
 - name: Enable Services
   become: yes
   service:

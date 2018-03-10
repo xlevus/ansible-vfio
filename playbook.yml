@@ -1,11 +1,6 @@
 ---
-- hosts: all
-  tasks:
-    - group_by: key=os_{{ ansible_distribution }}
-
 - hosts:
-    - xi9
-  gather_facts: False
+    - localhost
   vars:
     vfio_iommu: intel  # amd|intel
     vfio_pci_ids:
